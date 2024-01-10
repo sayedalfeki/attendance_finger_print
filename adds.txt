@@ -1,0 +1,6 @@
+- update attendance
+- work places
+- working hours
+- symbols
+- localization
+- 
