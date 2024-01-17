@@ -39,19 +39,20 @@ class AttendanceOperation
     int id=map[0][attendanceIdColumn];
     return id;
   }
-  Future<List<AttendanceModel>> getAllFingerPrint(int month,int year) async{
+  Future<List<AttendanceModel>> getAllFingerPrint({required int month,required int year,required int workPlaceId}) async{
     String newMonth=month<10?'0$month':'$month';
     String searchedDate='$year-$newMonth';
     final db= await _database;
     List<AttendanceModel> afpList=[];
-    List<Map> afpMap=await db.query(attendanceTableName,where: '$attendanceDateColumn like "$searchedDate%"',
+    List<Map> afpMap=await db.query(attendanceTableName,where: '$attendanceDateColumn like "$searchedDate%" AND '
+        '$workPlaceIdColumn=$workPlaceId',
         orderBy:attendanceDateColumn);
     if(afpMap.isNotEmpty)
     {
       afpList=List.generate(afpMap.length, (index){
         return AttendanceModel(
             attendanceId:afpMap[index][attendanceIdColumn],
-            month:afpMap[index][monthColumn],
+            workPlaceId:afpMap[index][workPlaceIdColumn],
             date: afpMap[index][attendanceDateColumn],
             attendanceSymbol: afpMap[index][attendanceSymbolColumn],
             checkInTime: afpMap[index][checkInColumn],
@@ -76,11 +77,11 @@ class AttendanceOperation
   //   }
   //   return afpList;
   // }
- Future<int> dateFoundId(String date)async
+ Future<int> dateFoundId(String date,int workPlaceId)async
  {
    int id=-1;
    final db= await _database;
-   List<Map> afpMap=await db.query(attendanceTableName,where: '$attendanceDateColumn=? ',whereArgs: [date]);
+   List<Map> afpMap=await db.query(attendanceTableName,where: '$attendanceDateColumn=? AND $workPlaceIdColumn=?',whereArgs: [date,workPlaceId]);
    if(afpMap.isNotEmpty)
    {
      id=afpMap[0][attendanceIdColumn];
@@ -93,7 +94,7 @@ class AttendanceOperation
    List<Map> attendanceMap=await db.query(attendanceTableName,where: '$attendanceIdColumn=?',
        whereArgs: [attendanceId]);
    return AttendanceModel(attendanceId:attendanceMap[0][attendanceIdColumn],
-         month:attendanceMap[0][monthColumn],
+         workPlaceId:attendanceMap[0][workPlaceIdColumn],
         date: attendanceMap[0][attendanceDateColumn],
          attendanceSymbol:attendanceMap[0][attendanceSymbolColumn],
         checkInTime: attendanceMap[0][checkInColumn],

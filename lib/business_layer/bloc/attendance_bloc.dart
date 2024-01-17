@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:work_finger_print/database/attendance_operation.dart';
-import 'package:work_finger_print/database/work_place_operation.dart';
 import 'package:work_finger_print/helper/const.dart';
 import 'package:work_finger_print/helper/helper_function.dart';
-import 'package:work_finger_print/model/work_place_model.dart';
-import '../helper/date.dart';
-import '../model/attendance_model.dart';
-import 'app_states.dart';
+import '../../helper/date.dart';
+import '../../model/attendance_model.dart';
+import '../states/attendance_states.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AttendanceBloc extends Cubit<AppState>
+class AttendanceBloc extends Cubit<AttendanceState>
 {
   AttendanceBloc():super(InitAppState());
   static AttendanceBloc instance(BuildContext context)=>BlocProvider.of(context);
@@ -27,6 +25,18 @@ class AttendanceBloc extends Cubit<AppState>
   List<bool> checkedList=[];
   List years=[];
   int shiftIndex=0;
+  //List<String> places=[];
+  //int workPlaceIndex=0;
+  // addWorkPlace(String workPlace)
+  // {
+  //   places.add(workPlace);
+  //   emit(AddingWorkPlace());
+  // }
+  // changeWorkPlaceIndex(String value)
+  // {
+  //   workPlaceIndex=places.indexOf(value);
+  //   emit(ChangeWorkPlaceIndex());
+  // }
   changeShiftIndex()
   {
     shiftIndex==0?shiftIndex=1:shiftIndex=0;
@@ -524,9 +534,9 @@ initCheckInDate(AttendanceModel attendanceModel)
   emit(IncreaseDateState());
 }
  //database
-  Future<int> dateFoundId(String date)async
+  Future<int> dateFoundId(String date,int workPlaceId)async
   {
-    int id=await afpOperation.dateFoundId(date);
+    int id=await afpOperation.dateFoundId(date,workPlaceId);
     return id;
   }
   addAttendanceTable(AttendanceModel attendanceModel)
@@ -569,9 +579,9 @@ initCheckInDate(AttendanceModel attendanceModel)
     afpOperation.delete(id: id);
     emit(DeleteAttendanceState());
   }
-  getAllAFP()async
+  getAllAFP(int workPlaceId)async
   {
-    afpList=await afpOperation.getAllFingerPrint(month,year);
+    afpList=await afpOperation.getAllFingerPrint(month:month,year:year,workPlaceId: workPlaceId);
     emit(GetAllAFPState());
   }
 }

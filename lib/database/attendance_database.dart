@@ -20,16 +20,14 @@ class AttendanceDatabase {
     return openDatabase(
       join(await getDatabasesPath(),databaseName),
       onCreate: (db, version) {
-        // db.execute('CREATE TABLE $workPlaceTableName ($workPlaceIdColumn INTEGER PRIMARY KEY AUTOINCREMENT ,'
-        //     '$workPlaceNameColumn TEXT UNIQUE)');
+        db.execute('CREATE TABLE $workPlaceTableName ($workPlaceIdColumn INTEGER PRIMARY KEY AUTOINCREMENT ,'
+            '$workPlaceNameColumn TEXT UNIQUE)');
         db.execute(
             'CREATE TABLE $attendanceTableName ($attendanceIdColumn INTEGER PRIMARY KEY AUTOINCREMENT ,'
-                '$attendanceDateColumn TEXT UNIQUE ,$monthColumn INTEGER ,$checkInColumn TEXT,$checkOutColumn TEXT,'
-                '$attendanceSymbolColumn TEXT)');
-        // db.execute(
-        //     'CREATE TABLE $workTableName ($workTableIdColumn INTEGER PRIMARY KEY AUTOINCREMENT ,'
-        //         '$workTableSymbolColumn TEXT,$workTableWorkingHoursColumn INTEGER ,$workTableDateColumn TEXT'
-        //         '$workPlaceIdColumn INTEGER FOREIGN KEY REFERENCES $workPlaceTableName($workPlaceIdColumn) )');
+                '$attendanceDateColumn TEXT ,$checkInColumn TEXT,$checkOutColumn TEXT,'
+                '$attendanceSymbolColumn TEXT, $workPlaceIdColumn INTEGER ,FOREIGN KEY ($workPlaceIdColumn) REFERENCES $workPlaceTableName($workPlaceIdColumn),'
+                'CONSTRAINT UQ_date_workPlace UNIQUE ($attendanceDateColumn,$workPlaceIdColumn))');
+
         },
       version: 1,
     );
