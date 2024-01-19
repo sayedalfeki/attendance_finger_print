@@ -13,10 +13,11 @@ const String workPlaceNameColumn='work_place_name';
 const String workingHours='working_hours';
 const String shift='shift';
 List<int> months=[1,2,3,4,5,6,7,8,9,10,11,12];
-//List shiftSymbols=['M1','M3','M5','A1','A3','A6','M2','M4','A2','A4','X','L','N','LN','AN'];
-//List attendanceHours=[6,6,6,6,6,6,7,7,7,7,9,12,12,24,18];
+List shiftSymbols=['M1','M3','M5','M6','A1','A3','A6','M2','M4','A2','A4','X1','X2','X3','L1','L2','L4','N1','N2','L1N1','L2N2',
+  'A1N1','A3N2','O'];
+List attendanceHours=[6,6,6,6,6,6,6,7,7,7,7,9,9,9,12,12,12,12,12,24,24,18,18,0];
 List<String> symbols=['M1','M2','M3','M4','M5','M6','A1','A2','A3','A4','A6','X1','X2','X3','L1','L2',
-  'L4','L1N1','L2N2','A1N1','A3N2','O'];
+  'L4','L1N1','L2N2','A1N1','A3N2','N1','N2','O'];
 List list6=[];
 List list7=['','','','','','','','','','','','(M5)-2','(M5)-1||(M6)-2','M5||(M6)-1','(X3)-2||M6','(X3)-1',
 'X3','(L4)-2','(L4)-1','L4',''];

@@ -235,7 +235,7 @@ class HistoryWidget extends StatelessWidget
                   // working hours
                   MakeHistoryRectangle(data: '$wHrs',backColor: Colors.white),
                   // table shift
-                  MakeHistoryRectangle(data: tableShift,backColor: Colors.white),
+                  MakeHistoryRectangle(data: tableShift,backColor: Colors.white,fontSize: 14,),
                   // attendance shift
                   MakeHistoryRectangle(data: shifts.isEmpty?newWorkShift:shifts[modelBloc.shiftIndex],backColor: Colors.white,
                     textColor:tableShift!=workShift? Colors.red:Colors.black,),

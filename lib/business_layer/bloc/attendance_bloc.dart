@@ -350,31 +350,35 @@ class AttendanceBloc extends Cubit<AttendanceState>
     for(var attendanceModel in attendanceList)
     {
       String shiftSymbol=attendanceModel.attendanceSymbol;
-      if(shiftSymbol.contains('O'))
-      {
-        monthHour+=0;
-      }
-      else if(shiftSymbol.contains('L')||shiftSymbol.contains('N'))
-      {
-        monthHour+=12;
-      }
-      else if(shiftSymbol.contains('X'))
-      {
-        monthHour+=9;
-      }
-      else if(shiftSymbol.contains('L1N1')||shiftSymbol.contains('L2N2'))
-      {
-        monthHour+=24;
-      }
-      else if(shiftSymbol.contains('M2')||shiftSymbol.contains('M4')||
-          shiftSymbol.contains('A2')||shiftSymbol.contains('A4'))
-      {
-        monthHour+=7;
-      }
-      else
-      {
-        monthHour+=6;
-      }
+      int symbolIndex=shiftSymbols.indexOf(shiftSymbol);
+      int hour=attendanceHours[symbolIndex];
+      monthHour+=hour;
+      // if(shiftSymbol.contains('O'))
+      // {
+      //   monthHour+=0;
+      // }
+      // else if(shiftSymbol.contains('L')||shiftSymbol.contains('N'))
+      // {
+      //
+      //   monthHour+=12;
+      // }
+      // else if(shiftSymbol.contains('X'))
+      // {
+      //   monthHour+=9;
+      // }
+      // else if(shiftSymbol.contains('L1N1')||shiftSymbol.contains('L2N2'))
+      // {
+      //   monthHour+=24;
+      // }
+      // else if(shiftSymbol.contains('M2')||shiftSymbol.contains('M4')||
+      //     shiftSymbol.contains('A2')||shiftSymbol.contains('A4'))
+      // {
+      //   monthHour+=7;
+      // }
+      // else
+      // {
+      //   monthHour+=6;
+      // }
     }
     return monthHour;
   }
