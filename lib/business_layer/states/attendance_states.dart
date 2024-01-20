@@ -26,7 +26,10 @@ class ChangeChecked extends AttendanceState{}
 class InitCheckedList extends AttendanceState{}
 class InitYearsState extends AttendanceState{}
 class ChangeShiftIndex extends AttendanceState{}
-
+class ShowDateRange extends AttendanceState{}
+class ChangeFromDate extends AttendanceState{}
+class ChangeToDate extends AttendanceState{}
+class GetSelectedDates extends AttendanceState{}
 
 
 

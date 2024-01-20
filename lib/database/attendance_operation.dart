@@ -116,4 +116,25 @@ Future<List<String>> getAllDates()async
   }
   return dates;
 }
+Future<List<AttendanceModel>> getAllAttendances(int workPlaceId)async
+{
+  final db= await _database;
+  List<AttendanceModel> afpList=[];
+  List<Map> afpMap=await db.query(attendanceTableName,where: '$workPlaceIdColumn=?',
+      whereArgs: [workPlaceId],orderBy: attendanceDateColumn);
+  if(afpMap.isNotEmpty)
+  {
+    afpList=List.generate(afpMap.length, (index){
+      return AttendanceModel(
+        attendanceId:afpMap[index][attendanceIdColumn],
+        workPlaceId:afpMap[index][workPlaceIdColumn],
+        date: afpMap[index][attendanceDateColumn],
+        attendanceSymbol: afpMap[index][attendanceSymbolColumn],
+        checkInTime: afpMap[index][checkInColumn],
+        checkOutTime: afpMap[index][checkOutColumn],
+      );
+    });
+  }
+  return afpList;
+}
 }

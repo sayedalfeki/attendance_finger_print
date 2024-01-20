@@ -25,7 +25,7 @@ class CheckPage extends StatelessWidget {
           WorkPlaceBloc workPlaceBloc=WorkPlaceBloc.instance(mainContext);
          // workPlaceBloc.getWorkPlaces();
           List<String> places=workPlaceBloc.places;
-          appHelper.printData(places.toString());
+         // appHelper.printData(places.toString());
           return BlocProvider(
             create: (context)=>AttendanceBloc(),
             child: BlocConsumer<AttendanceBloc,AttendanceState>(
@@ -99,7 +99,7 @@ class CheckWidget extends StatelessWidget {
             Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppSizedBox(width: 10),
+                  AppSpacer(width: 10),
                  places.isEmpty?AppText('add work place'): DropdownButton<String>(
                       value:places[workPlaceBloc.placeIndex],
                       items: places.map((e) {
@@ -110,7 +110,7 @@ class CheckWidget extends StatelessWidget {
                       , onChanged:(value){
                         workPlaceBloc.changePlaceIndex(value!);
                  }),
-                  AppSizedBox(width: 10),
+                  AppSpacer(width: 10),
                   IconButton(onPressed: (){
                       showDialog(context: context, builder:(context){
                         return AlertDialog(
@@ -120,7 +120,7 @@ class CheckWidget extends StatelessWidget {
                   }, icon:Icon(Icons.add))
                 ],
               ),
-            AppSizedBox(height: 50),
+            AppSpacer(height: 50),
             // date
             AppTextField(
                 onTap: () async {
@@ -132,7 +132,7 @@ class CheckWidget extends StatelessWidget {
                   }
                 },
                 controller: dateController, label: 'date', hint: 'enter date'),
-            AppSizedBox(),
+            AppSpacer(),
             AppTextField(
                 onTap: () async {
                   TimeOfDay? time = await appHelper.showTime();
@@ -143,7 +143,7 @@ class CheckWidget extends StatelessWidget {
                   }
                 },
                 controller: timeController, label: 'time', hint: 'enter time'),
-            AppSizedBox(),
+            AppSpacer(),
             GestureDetector(
               onTap: ()
               {
@@ -153,7 +153,7 @@ class CheckWidget extends StatelessWidget {
                 // appHelper.showSnackBar('$wh');
                 registerAttendance(model,workPlaceBloc);
               },
-              child: WrapableContainer(
+              child: AppContainer(
                   child: AppText('register', color: Colors.white,),
                   color: Colors.teal
               ),
@@ -272,11 +272,11 @@ class WorkTableWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AppText('add your work table',color: Colors.teal,),
-              AppSizedBox(height: 30),
+              AppSpacer(height: 30),
               Expanded(
                   flex: 2,
                   child: AppText(workPlace,color: Colors.blue,)),
-              AppSizedBox(),
+              AppSpacer(),
               Expanded(
                 flex: 1,
                 child: AppTextField(
@@ -290,7 +290,7 @@ class WorkTableWidget extends StatelessWidget {
                     },
                     controller:dateController, label:'date', hint:''),
               ),
-              AppSizedBox(width: 10),
+              AppSpacer(width: 10),
               Expanded(
                 flex: 1,
                 child: DropdownButton<String>(
@@ -306,7 +306,7 @@ class WorkTableWidget extends StatelessWidget {
                        modelBloc.changeSymbol(value!);
                     }),
               ),
-              AppSizedBox(),
+              AppSpacer(),
               GestureDetector(
                 onTap: () async {
                    String date=dateHelper.getDate(modelBloc.dateTime);
@@ -325,7 +325,7 @@ class WorkTableWidget extends StatelessWidget {
                      }
                    modelBloc.increaseDateByOne();
                 },
-                  child: WrapableContainer(
+                  child: AppContainer(
                       color: Colors.teal,
                       child: AppText('add',color: Colors.white,)))
             ],
@@ -348,9 +348,9 @@ class WorkPlaceWidget extends StatelessWidget {
               //mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppText('add your work place'),
-            AppSizedBox(height: 100),
+            AppSpacer(height: 100),
             AppTextField(controller:workPlaceController, label:'work place', hint:'add your work place'),
-            AppSizedBox(height: 20),
+            AppSpacer(height: 20),
             GestureDetector(
               onTap: (){
                 WorkPlaceModel workPlaceModel=WorkPlaceModel(workPlaceId: 1,
@@ -358,7 +358,7 @@ class WorkPlaceWidget extends StatelessWidget {
                 workPlaceBloc.addPlace(workPlaceModel);
                 Navigator.pop(context);
               },
-              child: WrapableContainer(
+              child: AppContainer(
                   child: AppText('add')),
             )
           ],

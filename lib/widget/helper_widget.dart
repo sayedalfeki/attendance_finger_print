@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-class AppText extends StatelessWidget
-{
+class AppText      extends StatelessWidget {
   const AppText(this.data,{super.key, this.color=Colors.black,
     this.textDecoration=TextDecoration.none,
     this.fontWeight=FontWeight.bold,this.fontSize=20});
@@ -22,98 +21,120 @@ class AppText extends StatelessWidget
   }
 
 }
+class AppContainer extends StatelessWidget {
+  const AppContainer({ Key? key, this.child,
+    this.width,
+    this.height,
+    this.color=Colors.white,
+    this.radius=1,
+    this.padding=1,
+    this.alignment=Alignment.center,
+    this.borderColor=Colors.white
+  }) : super(key: key);
+  final Widget? child;
+  final Alignment alignment;
+  final double? width,height;
+  final double padding,radius;
+  final Color color,borderColor;
 
-
-Widget WrapableContainer({required Widget child,double width=400,
-  double height=50,Color color=Colors.white,
-  int alpha=0,
-  double radius=1,
-  double padding=1,
-  Alignment alignment=Alignment.center,
-  Color borderColor=const Color(0xFF000000)
-})
-{
-  return Container(
-      alignment:alignment,
-      padding:  EdgeInsets.all(padding),
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-          color: color,
-          border:Border.all(width: 1,color: borderColor),
-          borderRadius: BorderRadius.all(Radius.circular(radius))
-      ),
-      child:child
-  );
-}
-Widget AnotherWrapableContainer(
-    {required Widget child,double? width,
-      double? height,Color color=Colors.white,
-      int alpha=0,
-      double radius=1,
-      double padding=1,
-      Alignment alignment=Alignment.center
-    })
-{
-  return Container(
-      alignment:alignment,
-      padding:  EdgeInsets.all(padding),
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-          color: color,
-          border:Border.all(width: 0.5),
-          borderRadius: BorderRadius.all(Radius.circular(radius))
-      ),
-      child:child
-  );
-}
-Widget AppTextField({required TextEditingController controller,
-  required String label,required String hint,double radius=10,
-  Color borderColor=Colors.teal,
-  IconData? icon,
-  bool isPassword=false,
-  bool showPassword=false,
-  void Function()? onshowPassword,
-  void Function()? onTap,
-  void Function(String)? onChanged,
-  String? Function(String?)? onValidate,
-  bool? filled,
-  Color? filledColor,
-  FloatingLabelBehavior? floatingLabelBehavior,
-  void Function(String)? onSubmit
-})
-{
-  return
-    TextFormField(
-      onFieldSubmitted:onSubmit ,
-      validator: onValidate,
-      controller: controller,
-      onTap: onTap,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-          fillColor:filledColor,
-          filled:filled,
-          suffixIcon: showPassword?IconButton(onPressed:onshowPassword,
-              icon: Icon(icon)) :Icon(icon),
-          border:  OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(radius)),
-              borderSide: BorderSide(color:borderColor )),
-          labelText: label,
-          hintText: hint,
-          floatingLabelBehavior: floatingLabelBehavior
-      ),
-
-      obscureText: isPassword,
-
+  @override
+  Widget build(BuildContext context) {
+    return  Container(
+        alignment:alignment,
+        padding:  EdgeInsets.all(padding),
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+            color: color,
+            border:Border.all(width: 1,color: borderColor),
+            borderRadius: BorderRadius.all(Radius.circular(radius))
+        ),
+        child:child
     );
+  }
 }
-Widget AppSizedBox({double width=double.infinity,double height=10})
-{
-  return SizedBox(
-    width: width,
-    height: height,
-  );
-}
+class AppTextField extends StatelessWidget {
+  const AppTextField({Key? key, this.controller,
+    required this.label,
+    required this.hint,
+    this.radius=10,  this.borderColor=Colors.teal, this.filledColor,
+    this.icon,  this.isPassword=false, this.showPassword=false,
+    this.filled, this.onShowPassword,this.isFocused=false,
+    this.onTap, this.onChanged, this.onValidate, this.floatingLabelBehavior}) : super(key: key);
+  final TextEditingController? controller;
+  final String label,hint;
+  final double radius;
+  final Color borderColor;
+  final Color? filledColor;
+  final IconData? icon;
+  final bool isPassword,showPassword,isFocused;
+  final bool? filled;
+  final void Function()? onShowPassword;
+  final void Function()? onTap;
+  final void Function(String)? onChanged;
+  final String? Function(String?)? onValidate;
+  final FloatingLabelBehavior? floatingLabelBehavior;
+  @override
+  Widget build(BuildContext context) {
+    return
+      TextFormField(
+        validator: onValidate,
+        controller: controller,
+        onTap: onTap,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+            fillColor:filledColor,
+            filled:filled,
+            suffixIcon: showPassword?IconButton(onPressed:onShowPassword,
+                icon: Icon(icon)) :Icon(icon),
+            border:  OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(radius)),
+                borderSide: BorderSide(color:borderColor )),
+            labelText: label,
+            hintText: hint,
+            floatingLabelBehavior: floatingLabelBehavior
+        ),
+        obscureText: isPassword,
+        autofocus: isFocused,
 
+      );
+  }
+}
+class AppSpacer    extends StatelessWidget {
+  const AppSpacer({Key? key, this.width=double.infinity, this.height=10}) : super(key: key);
+  final double width,height;
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+    );
+  }
+}
+class AppButton    extends StatelessWidget {
+  const AppButton({Key? key, required this.data,
+    this.backGroundColor=Colors.blue, this.textColor=Colors.white,  this.onTap,
+    this.onDoubleTap,  this.onLongPress,this.width,this.height}) : super(key: key);
+  final String data;
+  final Color backGroundColor,textColor;
+  final double? width,height;
+  final void Function()? onTap;
+  final void Function()? onDoubleTap;
+  final void Function()?onLongPress;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      onDoubleTap: onDoubleTap,
+      onLongPress: onLongPress,
+      child: AppContainer(
+          width: width,
+          height:height,
+          color: backGroundColor,
+          radius: 10,
+          child: AppText(data,color: textColor,)
+      ),
+    );
+  }
+}
 

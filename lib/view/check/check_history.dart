@@ -23,13 +23,15 @@ class CheckHistoryPage extends StatelessWidget {
           WorkPlaceBloc workPlaceBloc=WorkPlaceBloc.instance(mainContext);
           workPlaceBloc.changePlaceIndex(workPlaceBloc.place);
           return BlocProvider(
-          create: (BuildContext context)=>AttendanceBloc()..getAllAFP(workPlaceId)..initYear(),
+          create: (BuildContext context)=>AttendanceBloc()..initFromDate()..initToDate()
+            ..getAllAttendanceBetweenDates(workPlaceId),
           child: BlocConsumer<AttendanceBloc,AttendanceState>(
             listener: (BuildContext context, AttendanceState state) {  },
             builder: (BuildContext context, AttendanceState state) {
               AttendanceBloc modelBloc=AttendanceBloc.instance(context);
-              modelBloc.initCheckedList();
-              modelBloc.initMonthAndYear();
+              //modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+               modelBloc.initCheckedList();
+              // modelBloc.initMonthAndYear();
               //modelBloc.getAllAFP();
               return Scaffold(
                 appBar: AppBar(title: const AppText('history page',fontWeight: FontWeight.normal,),
@@ -43,7 +45,7 @@ class CheckHistoryPage extends StatelessWidget {
                   }, icon:Icon(Icons.insert_chart_outlined,color: Colors.purple,))
                 ],
                 ),
-                body: CheckHistoryWidget(modelBloc:modelBloc,workPlaceBloc: workPlaceBloc,),
+                body: CheckHistoryWidget(modelBloc:modelBloc,workPlaceBloc: workPlaceBloc),
               );
             },
           ),
@@ -60,6 +62,7 @@ class CheckHistoryWidget extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     List<String> places=workPlaceBloc.places;
+    AppHelper appHelper=AppHelper(context);
     //TextEditingController  monthController=TextEditingController(text: '${modelBloc.month}');
     return Container(
       padding: const EdgeInsets.all(10),
@@ -68,8 +71,8 @@ class CheckHistoryWidget extends StatelessWidget{
         child: Column(
           children: [
             const AppText('Attendance History ',color: Colors.teal,),
-            AppSizedBox(),
-            places.isEmpty?AppSizedBox():Row(
+            AppSpacer(),
+            places.isEmpty?AppSpacer():Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 DropdownButton<String>(
@@ -82,51 +85,66 @@ class CheckHistoryWidget extends StatelessWidget{
                       workPlaceBloc.changePlace(value!);
                       workPlaceBloc.changePlaceIndex(value);
             int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
-            modelBloc.getAllAFP(workPlaceId);
+            modelBloc.getAllAttendanceBetweenDates(workPlaceId);
                 })
               ],
             ),
-            AppSizedBox(),
-            Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      AppText('month',color: Colors.blue,),
-                      AppSizedBox(width: 20),
-                      DropdownButton<int>(
-                          elevation: 0,
-                          value:months[modelBloc.monthIndex],
-                          items:
-                          months.map((value){
-                            return DropdownMenuItem(
-                                value: value,
-                                child: AppText('$value'));
-                          }).toList()
-                          ,
-                          onChanged:(value)async{
-                            modelBloc.changeMonth(value!);
+            AppSpacer(),
+            Visibility(
+              visible:true,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppText('from',fontSize: 15,),
+                  AppSpacer(width:5,),
+                  Expanded(
+                    child: Card(
+                      elevation: 10,
+                      child: AppButton(
+                        onTap: ()async{
+                          DateTime? fromDate=await appHelper.showDate();
+                          if(fromDate!=null)
+                          {
+                            if(fromDate.isAfter(modelBloc.toDate))
+                            {
+                              appHelper.showSnackBar('invalid selected date');
+                              return;
+                            }
+                            modelBloc.changeFromDate(fromDate);
                             int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
-                            modelBloc.getAllAFP(workPlaceId);
-                            modelBloc.checkedList.clear();
-                            //modelBloc.initCheckedList();
-                          }),
-                    ],
+                            modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+                          }
+                        },
+                        data:modelBloc.strFromDate,backGroundColor: Colors.white,textColor: Colors.black54,
+                      ),
+                    ),
                   ),
-                ),
-                AppSizedBox(width: 20),
-                Expanded(
-                  child: Row(
-                    children: [
-                      AppText('year',color: Colors.blue,),
-                      AppSizedBox(width: 20),
-                      YearsWidget(modelBloc: modelBloc,workPlaceBloc: workPlaceBloc,),
-                    ],
-                  ),
-                ),
-              ],
+                  AppSpacer(width: 10),
+                  AppText('to',fontSize: 15,),
+                  AppSpacer(width:5,),
+                  Expanded(child: Card(
+                      elevation: 10,
+                      child: AppButton(
+                        onTap: ()async{
+                          DateTime? toDate=await appHelper.showDate();
+                          if(toDate!=null)
+                          {
+                            if(toDate.isBefore(modelBloc.fromDate))
+                            {
+                              appHelper.showSnackBar('invalid selected date');
+                              return;
+                            }
+                            modelBloc.changeToDate(toDate);
+                            int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
+                            modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+                          }
+                        },
+                        data:modelBloc.strToDate,backGroundColor: Colors.white,textColor: Colors.black54,))),
+
+                ],
+              ),
             ),
-            AppSizedBox(),
+            AppSpacer(height: 20,),
             Row(
              children: [
                Checkbox(value: false, onChanged:(value){}),
@@ -139,7 +157,7 @@ class CheckHistoryWidget extends StatelessWidget{
 
              ],
            ),
-            AppSizedBox(),
+            AppSpacer(),
             // dynamic data
              Expanded(child: HistoryWidget(modelBloc: modelBloc,workPlaceBloc: workPlaceBloc,))
           ],
@@ -170,7 +188,8 @@ class HistoryWidget extends StatelessWidget
         if(afpList.isNotEmpty)
         {
           wHrs=strCheckOutDate!=null?modelBloc.getWorkingHours(DateTime.parse(strCheckInDate!),DateTime.parse(strCheckOutDate)):0;
-          day=afpList[index].date.substring(8,10);
+          DateTime checkDate=dateHelper.getDateTime(afpList[index].date);
+          day='${checkDate.day}-${checkDate.month}';
           checkIn=strCheckInDate!=null?dateHelper.getTimeOfDay(DateTime.parse(afpList[index].checkInTime!)):'0:0';
           checkOut=strCheckOutDate!=null?dateHelper.getTimeOfDay(DateTime.parse(afpList[index].checkOutTime!)):'0:0';
           String strMinuteLated=checkIn.length>4?checkIn.substring(3):checkIn.substring(2);
@@ -207,14 +226,14 @@ class HistoryWidget extends StatelessWidget
                   );
                 }).then((value)async {
                   int workPlaceId=await workPlaceBloc.getWorkPlaceId(workPlaceBloc.places[workPlaceBloc.placeIndex]);
-                  modelBloc.getAllAFP(workPlaceId);
+                  modelBloc.getAllAttendanceBetweenDates(workPlaceId);
                 });
               },
               onLongPress:()async
               {
                 modelBloc.deleteAFP(afpList[index].attendanceId);
                 int workPlaceId=await workPlaceBloc.getWorkPlaceId(workPlaceBloc.places[workPlaceBloc.placeIndex]);
-                modelBloc.getAllAFP(workPlaceId);
+                modelBloc.getAllAttendanceBetweenDates(workPlaceId);
               },
               child: Row(
                 children: [
@@ -242,7 +261,7 @@ class HistoryWidget extends StatelessWidget
                 ],
               ),
             ),
-            AppSizedBox(height: 5)
+            AppSpacer(height: 5)
           ],
         );
       },
@@ -262,7 +281,8 @@ class  MakeHistoryRectangle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: AnotherWrapableContainer(
+      child: AppContainer(
+        borderColor: Colors.black,
         color: backColor,
         height: 50,
         child: AppText(data, fontWeight: fontWeight, fontSize: fontSize,color:textColor,),
@@ -270,47 +290,7 @@ class  MakeHistoryRectangle extends StatelessWidget {
     );
   }
 }
-class YearsWidget extends StatelessWidget {
-  YearsWidget({Key? key,required this.modelBloc,required this.workPlaceBloc}) : super(key: key);
-  final AttendanceBloc modelBloc;
-  final WorkPlaceBloc workPlaceBloc;
-  @override
-  Widget build(BuildContext context) {
-   // modelBloc.initYear();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          child: Visibility(
-            visible: modelBloc.years.isEmpty?false:true,
-            child: DropdownButton<int>(
-                value:modelBloc.years.isEmpty?0:modelBloc.years[modelBloc.yearIndex],
-                items:
-                modelBloc.years.isEmpty?[
-                  DropdownMenuItem<int>(
-                    value:0,
-                    child: AppText('register attendance first',fontSize: 10,),
-                  )
-                ]:modelBloc.years.map((value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: AppText('$value'),
-                  );
-                }).toList()
-                ,
-                onChanged:(value)async{
-                  modelBloc.changeYear(value!);
-                  int workPlaceId=await workPlaceBloc.getWorkPlaceId(workPlaceBloc.places[workPlaceBloc.placeIndex]);
-                  modelBloc.getAllAFP(workPlaceId);
-                  modelBloc.checkedList.clear();
-                  //modelBloc.initCheckedList();
-                }),
-          ),
-        ),
-      ],
-    );
-  }
-}
+
 class StatisticWidget extends StatelessWidget {
   const StatisticWidget({Key? key,required this.modelBloc,required this.workPlaceBloc}) : super(key: key);
 final AttendanceBloc modelBloc;
@@ -342,15 +322,15 @@ final WorkPlaceBloc workPlaceBloc;
         children: [
           AppText('attendance month statistics',fontSize: 15,color: Colors.blue,),
           //AppSizedBox(height: 100),
-          AppSizedBox(height: 30),
+          AppSpacer(height: 30),
           Expanded(
             flex:1,
-            child: WrapableContainer(
+            child: AppContainer(
 
                 width: 200,
                 child: AppText(workPlaceBloc.place,color: Colors.blue,fontSize: 20,)),
           ),
-          AppSizedBox(height: 50),
+          AppSpacer(height: 50),
           Expanded(
             flex: 1,
             child: Container(
@@ -358,7 +338,7 @@ final WorkPlaceBloc workPlaceBloc;
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(child: AppText('late hours:',fontSize: 15,color: Colors.blue)),
-                  AppSizedBox(width: 10),
+                  AppSpacer(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -367,7 +347,7 @@ final WorkPlaceBloc workPlaceBloc;
                       AppText('($monthlyLateHours minute)',fontSize: 15,)
                     ],
                   ),
-                  AppSizedBox(width: 10),
+                  AppSpacer(width: 10),
                   Visibility(
                        visible: monthlyLateHours>359?true:false,
                       child: Icon(Icons.error_outlined,color: Colors.red,))
@@ -375,29 +355,29 @@ final WorkPlaceBloc workPlaceBloc;
               ),
             ),
           ),
-          AppSizedBox(),
+          AppSpacer(),
           Expanded(
             flex: 1,
             child: Row(
               children: [
                 Expanded(child: AppText('month hours :',fontSize: 15,color: Colors.blue)),
-                AppSizedBox(width: 10),
+                AppSpacer(width: 10),
                 AppText('$monthHour hrs',fontSize: 15,)
               ],
             ),
           ),
-          AppSizedBox(),
+          AppSpacer(),
           Expanded(
             flex: 1,
             child: Row(
               children: [
                 Expanded(child: AppText('attendance hours :',fontSize: 15,color: Colors.blue)),
-                AppSizedBox(width: 10),
+                AppSpacer(width: 10),
                 AppText('$attendanceHour hrs',fontSize: 15,)
               ],
             ),
           ),
-          AppSizedBox(),
+          AppSpacer(),
           Expanded(
             flex: 1,
             child: Container(
@@ -405,7 +385,7 @@ final WorkPlaceBloc workPlaceBloc;
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(child: AppText('vacation:',fontSize: 15,color: Colors.blue)),
-                  AppSizedBox(width: 10),
+                  AppSpacer(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -419,7 +399,7 @@ final WorkPlaceBloc workPlaceBloc;
               ),
             ),
           ),
-          AppSizedBox(),
+          AppSpacer(),
 
         ],
       ),
@@ -461,7 +441,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
             child: Column(
               children: [
                 AppText('update your attendance',color: Colors.teal,),
-                AppSizedBox(height: 20),
+                AppSpacer(height: 20),
                 //date
                 AppTextField(
                     onTap: ()async{
@@ -472,7 +452,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                       }
                     },
                     controller:dateController, label:'date', hint:''),
-                AppSizedBox(),
+                AppSpacer(),
                 //check in
                 Visibility(
                   visible: attendanceModel.checkInTime!=null?true:false,
@@ -487,7 +467,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                       },
                       controller:checkInController, label:'check in', hint:''),
                 ),
-                AppSizedBox(),
+                AppSpacer(),
                 //check out
                 Visibility(
                   visible: attendanceModel.checkOutTime!=null?true:false,
@@ -504,7 +484,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                       },
                       controller:checkOutController, label:'check out', hint:''),
                 ),
-                AppSizedBox(width: 10),
+                AppSpacer(width: 10),
                 // checkout date
                 Visibility(
                   visible: attendanceModel.checkOutTime!=null?true:false,
@@ -518,13 +498,13 @@ class UpdateAttendanceWidget extends StatelessWidget {
                       },
                       controller:checkOutDateController, label:'check out date', hint:''),
                 ),
-                AppSizedBox(),
+                AppSpacer(),
                 // shift symbols
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     AppText('shift',color: Colors.teal,),
-                    AppSizedBox(width: 20),
+                    AppSpacer(width: 20),
                     DropdownButton<String>(
                         value:symbols[modelBloc.symbolIndex],
                         items:
@@ -539,7 +519,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                         }),
                   ],
                 ),
-                AppSizedBox(),
+                AppSpacer(),
                 GestureDetector(
                     onTap: ()async{
                       String? strCheckIn;
@@ -565,7 +545,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                      modelBloc.updateAttendanceTable(attendanceModel.attendanceId, updatedAttendanceModel);
                      Navigator.pop(context);
                     },
-                    child: WrapableContainer(child: AppText('update',color: Colors.white,)
+                    child: AppContainer(child: AppText('update',color: Colors.white,)
                     ,color: Colors.teal))
               ],
             ),
@@ -576,5 +556,90 @@ class UpdateAttendanceWidget extends StatelessWidget {
     );
   }
 }
-
+// class YearsWidget extends StatelessWidget {
+//   YearsWidget({Key? key,required this.modelBloc,required this.workPlaceBloc}) : super(key: key);
+//   final AttendanceBloc modelBloc;
+//   final WorkPlaceBloc workPlaceBloc;
+//   @override
+//   Widget build(BuildContext context) {
+//    // modelBloc.initYear();
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         Container(
+//           child: Visibility(
+//             visible: modelBloc.years.isEmpty?false:true,
+//             child: DropdownButton<int>(
+//                 value:modelBloc.years.isEmpty?0:modelBloc.years[modelBloc.yearIndex],
+//                 items:
+//                 modelBloc.years.isEmpty?[
+//                   DropdownMenuItem<int>(
+//                     value:0,
+//                     child: AppText('register attendance first',fontSize: 10,),
+//                   )
+//                 ]:modelBloc.years.map((value) {
+//                   return DropdownMenuItem<int>(
+//                     value: value,
+//                     child: AppText('$value'),
+//                   );
+//                 }).toList()
+//                 ,
+//                 onChanged:(value)async{
+//                   modelBloc.changeYear(value!);
+//                   int workPlaceId=await workPlaceBloc.getWorkPlaceId(workPlaceBloc.places[workPlaceBloc.placeIndex]);
+//                   modelBloc.getAllAFP(workPlaceId);
+//                   modelBloc.checkedList.clear();
+//                   //modelBloc.initCheckedList();
+//                 }),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
+/*
+* Visibility(
+              visible:!modelBloc.showDate,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        AppText('month',color: Colors.blue,),
+                        AppSpacer(width: 20),
+                        DropdownButton<int>(
+                            elevation: 0,
+                            value:months[modelBloc.monthIndex],
+                            items:
+                            months.map((value){
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: AppText('$value'));
+                            }).toList()
+                            ,
+                            onChanged:(value)async{
+                              modelBloc.changeMonth(value!);
+                              int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
+                              modelBloc.getAllAFP(workPlaceId);
+                              modelBloc.checkedList.clear();
+                              //modelBloc.initCheckedList();
+                            }),
+                      ],
+                    ),
+                  ),
+                  AppSpacer(width: 20),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        AppText('year',color: Colors.blue,),
+                        AppSpacer(width: 20),
+                        YearsWidget(modelBloc: modelBloc,workPlaceBloc: workPlaceBloc,),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AppSpacer(),
+* */
 

@@ -16,27 +16,48 @@ class AttendanceBloc extends Cubit<AttendanceState>
   List<AttendanceModel> afpList=[];
   DateTime dateTime=DateTime.now();
   DateTime checkInDate=DateTime.now(),checkOutDate=DateTime.now();
-  int month=DateTime.now().month;
-  int year=DateTime.now().year;
-  int yearIndex=0;
-  int monthIndex=0;
+ // int month=DateTime.now().month;
+ // int year=DateTime.now().year;
+  //int yearIndex=0;
+ // int monthIndex=0;
   int symbolIndex=0;
   bool checked=false;
   List<bool> checkedList=[];
-  List years=[];
   int shiftIndex=0;
-  //List<String> places=[];
-  //int workPlaceIndex=0;
-  // addWorkPlace(String workPlace)
-  // {
-  //   places.add(workPlace);
-  //   emit(AddingWorkPlace());
-  // }
-  // changeWorkPlaceIndex(String value)
-  // {
-  //   workPlaceIndex=places.indexOf(value);
-  //   emit(ChangeWorkPlaceIndex());
-  // }
+  DateTime fromDate=DateTime.now();
+  DateTime toDate=DateTime.now();
+  String strFromDate='';
+  String strToDate='';
+  DateTime _getLastDayOfMonth(int year,int month)
+  {
+    DateTime nextMonth=DateTime.utc(year,month+1,1);
+    DateTime lastDayMonth=nextMonth.subtract(Duration(days: 1));
+    return lastDayMonth;
+  }
+  initFromDate()
+  {
+    DateTime newDate=DateTime(fromDate.year,fromDate.month,1);
+    fromDate=newDate;
+    strFromDate=dateHelper.getDate(fromDate);
+  }
+  initToDate()
+  {
+    DateTime newDate=_getLastDayOfMonth(toDate.year,toDate.month);
+    toDate=newDate;
+    strToDate=dateHelper.getDate(toDate);
+  }
+  changeToDate(DateTime chooseDate)
+  {
+    toDate=chooseDate;
+    strToDate=dateHelper.getDate(toDate);
+    emit(ChangeToDate());
+  }
+  changeFromDate(DateTime chooseDate)
+  {
+    fromDate=chooseDate;
+    strFromDate=dateHelper.getDate(fromDate);
+    emit(ChangeFromDate());
+  }
   changeShiftIndex()
   {
     shiftIndex==0?shiftIndex=1:shiftIndex=0;
@@ -70,255 +91,6 @@ class AttendanceBloc extends Cubit<AttendanceState>
     int wHrs=dateHelper.getHoursDifference(checkIn, checkOut);
     return wHrs;
   }
- //  String getShift(DateTime checkIn,DateTime checkOut,{String? tableSymbol })
- //  {
- //    int wHrs=getWorkingHours(checkIn, checkOut);
- //    String strShift='O';
- //    // m or A shift with 6 hours
- //    if(wHrs<7)
- //    {
- //      // m shift
- //      if(checkIn.hour<12)
- //      {
- //        strShift='M${_getM6ShiftNum(checkIn)}';
- //      }
- //      else
- //      {
- //        strShift='A${_getA6ShiftNum(checkIn)}';
- //      }
- //    }
- //    // m or A shift with 7 hours
- //    else if(wHrs==7)
- //    {
- //      if(tableSymbol!.contains('X'))
- //      {
- //        strShift='(X${_getXShiftNum(checkIn)})-2';
- //      }
- //      else{
- //        if(checkIn.hour<12)
- //        {
- //          // strShift='M';
- //          // if(wHrs==5)
- //          //   strShift='(M)-2';
- //          // else if(wHrs==6)
- //          // {
- //          //   if(tableSymbol.contains('M'))
- //          //     strShift='M';
- //          //   else
- //          //     strShift='(M)-1';
- //          // }
- //          // else
- //          //   strShift='M';
- //          strShift='M${_getM7ShiftNum(checkIn)}';
- //        }
- //        else
- //        {
- //          strShift='A${_getA7ShiftNum(checkIn)}';
- //        }
- //      }
- //    }
- //    // x shift
- //    else if(wHrs>7&&wHrs<=9)
- //    {
- //      if(wHrs==8)
- //        strShift='(X${_getXShiftNum(checkIn)})-1';
- //      else
- //        strShift='X${_getXShiftNum(checkIn)}';
- //    }
- //    // long shift and night shift
- //    else if(wHrs>9&&wHrs<=12)
- //    {
- //      // L shift
- //      if(checkIn.hour<14)
- //      {
- //
- //        if(wHrs==10)
- //            strShift='(L${_getLShiftNum(checkIn)})-2';
- //          else if(wHrs==11)
- //            strShift='(L${_getLShiftNum(checkIn)})-1';
- //          else
- //          {
- //            strShift='L${_getLShiftNum(checkIn)}';
- //          }
- //
- //      }
- //      // N shift
- //      else
- //      {
- //        if(wHrs==10)
- //        strShift='(N${_getNShiftNum(checkIn)})-2';
- //        else if(wHrs==11)
- //          strShift='(N${_getNShiftNum(checkIn)})-1';
- //        else
- //          strShift='N${_getNShiftNum(checkIn)}';
- //      }
- //    }
- //    // AN shift
- //    else if(wHrs>12&&wHrs<19)
- //    {
- //      if(wHrs==16)
- //      {
- //        strShift='(A${_getANShiftNum(checkIn)}N${_getANShiftNum(checkIn)})-2';
- //      }
- //      else if(wHrs==17)
- //      {
- //        strShift='(A${_getANShiftNum(checkIn)}N${_getANShiftNum(checkIn)})-1';
- //      }
- //      else
- //      {
- //        strShift='A${_getANShiftNum(checkIn)}N${_getANShiftNum(checkIn)}';
- //      }
- //    }
- //    // LN shift
- //    else
- //    {
- //      if(wHrs==22)
- //      strShift='(L${_getLShiftNum(checkIn)}N${_getLShiftNum(checkIn)})-2';
- //      else if(wHrs==23)
- //        strShift='(L${_getLShiftNum(checkIn)}N${_getLShiftNum(checkIn)})-1';
- //      else
- //        strShift='L${_getLShiftNum(checkIn)}N${_getLShiftNum(checkIn)}';
- //    }
- //    return strShift;
- //  }
- //  int _getM6ShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //    if((checkInDate.hour==10&&checkInDate.minute>15)||(checkInDate.hour==11&&checkInDate.minute>15))
- //      hr++;
- //    if(hr==7)
- //    {
- //      return 5;
- //    }
- //    else if(hr==8||hr==10) {
- //      return 1;
- //    }
- //    else
- //    {
- //      return 3;
- //    }
- //  }
- //  int _getM7ShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //    if(checkInDate.hour==10&&checkInDate.minute>15)
- //      hr++;
- //    if(hr==7)
- //    {
- //      return 6;
- //    }
- //    else if(hr==8||hr==10) {
- //      return 2;
- //    }
- //    else
- //    {
- //      return 4;
- //    }
- //  }
- //  int _getA7ShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //    if(hr==14)
- //    {
- //      return 2;
- //    }
- //    else
- //    {
- //      return 4;
- //    }
- //  }
- //  int _getA6ShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //
- //    if(hr==14)
- //    {
- //      return 1;
- //    }
- //   else if(hr==12)
- //     return 6;
- //    else
- //    {
- //      return 3;
- //    }
- //  }
- //  int _getXShiftNum(DateTime checkInDate)
- //  {
- //   int hr=checkInDate.hour;
- //   if(checkInDate.minute==0)
- //     hr--;
- //   if(checkInDate.hour==10&&checkInDate.minute>15)
- //     hr++;
- //   if(hr==7)
- //   {
- //     return 3;
- //   }
- //   else if(hr==8||hr==10) {
- //     return 1;
- //   }
- //     else
- //     {
- //       return 2;
- //     }
- //
- //
- // }
- //  int _getLShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //    if(checkInDate.hour==10&&checkInDate.minute>15)
- //      hr++;
- //    if(hr==7)
- //    {
- //      return 4;
- //    }
- //    else if(hr==8||hr==10) {
- //      return 1;
- //    }
- //    else
- //    {
- //      return 2;
- //    }
- //  }
- //  int _getNShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //    if(hr==20)
- //    {
- //      return 1;
- //    }
- //
- //    else
- //    {
- //      return 2;
- //    }
-//}
- //  int _getANShiftNum(DateTime checkInDate)
- //  {
- //    int hr=checkInDate.hour;
- //    if(checkInDate.minute==0)
- //      hr--;
- //    if(hr==14)
- //    {
- //      return 1;
- //    }
- //    else
- //    {
- //      return 2;
- //    }
- //  }
   String getShiftFromList(DateTime checkIn,DateTime checkOut)
   {
     String attendanceShift='';
@@ -353,32 +125,7 @@ class AttendanceBloc extends Cubit<AttendanceState>
       int symbolIndex=shiftSymbols.indexOf(shiftSymbol);
       int hour=attendanceHours[symbolIndex];
       monthHour+=hour;
-      // if(shiftSymbol.contains('O'))
-      // {
-      //   monthHour+=0;
-      // }
-      // else if(shiftSymbol.contains('L')||shiftSymbol.contains('N'))
-      // {
-      //
-      //   monthHour+=12;
-      // }
-      // else if(shiftSymbol.contains('X'))
-      // {
-      //   monthHour+=9;
-      // }
-      // else if(shiftSymbol.contains('L1N1')||shiftSymbol.contains('L2N2'))
-      // {
-      //   monthHour+=24;
-      // }
-      // else if(shiftSymbol.contains('M2')||shiftSymbol.contains('M4')||
-      //     shiftSymbol.contains('A2')||shiftSymbol.contains('A4'))
-      // {
-      //   monthHour+=7;
-      // }
-      // else
-      // {
-      //   monthHour+=6;
-      // }
+
     }
     return monthHour;
   }
@@ -422,56 +169,7 @@ class AttendanceBloc extends Cubit<AttendanceState>
     }
     return holidays;
   }
- // date and time
-  initYear()async
-  {
-    List<String> dates=await afpOperation.getAllDates();
-    dates.forEach((element) {
-      DateTime date=dateHelper.getDateTime(element);
-      int year=date.year;
-      if(years.isEmpty)
-      {
-        years.add(year);
-      }
-      else
-      {
-        if(!AppHelper.searchList(year, years))
-          years.add(year);
-      }
 
-    });
-    // afpList.forEach((element) {
-    //   DateTime date=dateHelper.getDateTime(element.date);
-    //   int year=date.year;
-    //   if(years.length==0)
-    //     years.add(year);
-    //   else {
-    //   if(!AppHelper.searchList(year, years))
-    //     years.add(year);
-    //   }
-    // });
-    emit(InitYearsState());
-  }
-  changeYear(int selectedYear)
-  {
-    year=selectedYear;
-    yearIndex=years.indexOf(selectedYear);
-    emit(ChangeYearState());
-  }
-  initMonthAndYear()
-  {
- // month=DateTime.now().month;
- // year=DateTime.now().year;
-  monthIndex=months.indexOf(month);
-  yearIndex=years.indexOf(year);
-  emit(InitMonthState());
-}
-  changeMonth(int selectedMonth)
-  {
-    month=selectedMonth;
-    monthIndex=months.indexOf(selectedMonth);
-    emit(ChangeMonthState());
-  }
   changeDate(DateTime chooseDate,{bool timeSelected=false})
   {
     if(timeSelected)
@@ -482,8 +180,7 @@ class AttendanceBloc extends Cubit<AttendanceState>
           dateTime.minute);
       dateTime = newDate;
     }
-  //date=dateHelper.getDate(dateTime);
-  emit(ChangeDateState());
+    emit(ChangeDateState());
 }
 initCheckInDate(AttendanceModel attendanceModel)
 {
@@ -502,19 +199,6 @@ initCheckInDate(AttendanceModel attendanceModel)
   changeCheckInDate(DateTime chooseDate,{bool timeSelected=false})
   {
     checkInDate=chooseDate;
-    // if(timeSelected)
-    //   checkInDate=chooseDate;
-    //   else
-    //   {
-    //     DateTime newDate = DateTime(
-    //         chooseDate.year, chooseDate.month, chooseDate.day,checkInDate.hour,
-    //         checkInDate.minute);
-    //     checkInDate= newDate;
-    //   }
-      // DateTime newDate = DateTime(
-      //     chooseDate.year, chooseDate.month, chooseDate.day, dateTime.hour,
-      //     dateTime.minute);
-      // dateTime = newDate;
 
     emit(ChangeDateState());
   }
@@ -583,13 +267,113 @@ initCheckInDate(AttendanceModel attendanceModel)
     afpOperation.delete(id: id);
     emit(DeleteAttendanceState());
   }
-  getAllAFP(int workPlaceId)async
+
+  getAllAttendanceBetweenDates(int workPlaceId)async
   {
-    afpList=await afpOperation.getAllFingerPrint(month:month,year:year,workPlaceId: workPlaceId);
-    emit(GetAllAFPState());
+    List<AttendanceModel> attendances=await afpOperation.getAllAttendances(workPlaceId);
+    afpList=attendances.where((element) {
+      int beforeMilliSecond=fromDate.millisecondsSinceEpoch;
+      int afterMilliSecond=toDate.millisecondsSinceEpoch;
+      int dateMillisecond=dateHelper.getDateTime(element.date).millisecondsSinceEpoch;
+      return dateMillisecond>=beforeMilliSecond&&dateMillisecond<=afterMilliSecond;
+    }).toList();
+    emit(GetSelectedDates());
   }
 }
-
+// if(shiftSymbol.contains('O'))
+// {
+//   monthHour+=0;
+// }
+// else if(shiftSymbol.contains('L')||shiftSymbol.contains('N'))
+// {
+//
+//   monthHour+=12;
+// }
+// else if(shiftSymbol.contains('X'))
+// {
+//   monthHour+=9;
+// }
+// else if(shiftSymbol.contains('L1N1')||shiftSymbol.contains('L2N2'))
+// {
+//   monthHour+=24;
+// }
+// else if(shiftSymbol.contains('M2')||shiftSymbol.contains('M4')||
+//     shiftSymbol.contains('A2')||shiftSymbol.contains('A4'))
+// {
+//   monthHour+=7;
+// }
+// else
+// {
+//   monthHour+=6;
+// }
+// if(timeSelected)
+//   checkInDate=chooseDate;
+//   else
+//   {
+//     DateTime newDate = DateTime(
+//         chooseDate.year, chooseDate.month, chooseDate.day,checkInDate.hour,
+//         checkInDate.minute);
+//     checkInDate= newDate;
+//   }
+// DateTime newDate = DateTime(
+//     chooseDate.year, chooseDate.month, chooseDate.day, dateTime.hour,
+//     dateTime.minute);
+// dateTime = newDate;
+// getAllAFP(int workPlaceId)async
+// {
+//   afpList=await afpOperation.getAllFingerPrint(month:month,year:year,workPlaceId: workPlaceId);
+//   emit(GetAllAFPState());
+// }
+// date and time
+//  initYear()async
+//  {
+//    List<String> dates=await afpOperation.getAllDates();
+//    dates.forEach((element) {
+//      DateTime date=dateHelper.getDateTime(element);
+//      int year=date.year;
+//      if(years.isEmpty)
+//      {
+//        years.add(year);
+//      }
+//      else
+//      {
+//        if(!AppHelper.searchList(year, years))
+//          years.add(year);
+//      }
+//
+//    });
+//    // afpList.forEach((element) {
+//    //   DateTime date=dateHelper.getDateTime(element.date);
+//    //   int year=date.year;
+//    //   if(years.length==0)
+//    //     years.add(year);
+//    //   else {
+//    //   if(!AppHelper.searchList(year, years))
+//    //     years.add(year);
+//    //   }
+//    // });
+//    emit(InitYearsState());
+//  }
+//  changeYear(int selectedYear)
+//  {
+//    year=selectedYear;
+//    yearIndex=years.indexOf(selectedYear);
+//    emit(ChangeYearState());
+//  }
+//   initMonthAndYear()
+//   {
+//  // month=DateTime.now().month;
+//  // year=DateTime.now().year;
+//   monthIndex=months.indexOf(month);
+//   yearIndex=years.indexOf(year);
+//   emit(InitMonthState());
+// }
+//   changeMonth(int selectedMonth)
+//   {
+//     month=selectedMonth;
+//     monthIndex=months.indexOf(selectedMonth);
+//     emit(ChangeMonthState());
+//   }
 /*
 * //    List<Map<String, List<int>>> sevenHoursShiftMorning=[{'M1':[8,14]},{'M2':[8,15]},{'M3':[9,15]},
 //      {'M4':[9,16]},{'M5':[7,13]},{'M6':[7,14]},{'(M1)-2a':[8,12]},{'(M1)-2m':[10,14]},
@@ -605,3 +389,252 @@ initCheckInDate(AttendanceModel attendanceModel)
 //    List<Map<String, List<int>>> dayShift=[{'L1N1':[8,32]},{'L2N2':[9,33]}];
 *
 * */
+//  String getShift(DateTime checkIn,DateTime checkOut,{String? tableSymbol })
+//  {
+//    int wHrs=getWorkingHours(checkIn, checkOut);
+//    String strShift='O';
+//    // m or A shift with 6 hours
+//    if(wHrs<7)
+//    {
+//      // m shift
+//      if(checkIn.hour<12)
+//      {
+//        strShift='M${_getM6ShiftNum(checkIn)}';
+//      }
+//      else
+//      {
+//        strShift='A${_getA6ShiftNum(checkIn)}';
+//      }
+//    }
+//    // m or A shift with 7 hours
+//    else if(wHrs==7)
+//    {
+//      if(tableSymbol!.contains('X'))
+//      {
+//        strShift='(X${_getXShiftNum(checkIn)})-2';
+//      }
+//      else{
+//        if(checkIn.hour<12)
+//        {
+//          // strShift='M';
+//          // if(wHrs==5)
+//          //   strShift='(M)-2';
+//          // else if(wHrs==6)
+//          // {
+//          //   if(tableSymbol.contains('M'))
+//          //     strShift='M';
+//          //   else
+//          //     strShift='(M)-1';
+//          // }
+//          // else
+//          //   strShift='M';
+//          strShift='M${_getM7ShiftNum(checkIn)}';
+//        }
+//        else
+//        {
+//          strShift='A${_getA7ShiftNum(checkIn)}';
+//        }
+//      }
+//    }
+//    // x shift
+//    else if(wHrs>7&&wHrs<=9)
+//    {
+//      if(wHrs==8)
+//        strShift='(X${_getXShiftNum(checkIn)})-1';
+//      else
+//        strShift='X${_getXShiftNum(checkIn)}';
+//    }
+//    // long shift and night shift
+//    else if(wHrs>9&&wHrs<=12)
+//    {
+//      // L shift
+//      if(checkIn.hour<14)
+//      {
+//
+//        if(wHrs==10)
+//            strShift='(L${_getLShiftNum(checkIn)})-2';
+//          else if(wHrs==11)
+//            strShift='(L${_getLShiftNum(checkIn)})-1';
+//          else
+//          {
+//            strShift='L${_getLShiftNum(checkIn)}';
+//          }
+//
+//      }
+//      // N shift
+//      else
+//      {
+//        if(wHrs==10)
+//        strShift='(N${_getNShiftNum(checkIn)})-2';
+//        else if(wHrs==11)
+//          strShift='(N${_getNShiftNum(checkIn)})-1';
+//        else
+//          strShift='N${_getNShiftNum(checkIn)}';
+//      }
+//    }
+//    // AN shift
+//    else if(wHrs>12&&wHrs<19)
+//    {
+//      if(wHrs==16)
+//      {
+//        strShift='(A${_getANShiftNum(checkIn)}N${_getANShiftNum(checkIn)})-2';
+//      }
+//      else if(wHrs==17)
+//      {
+//        strShift='(A${_getANShiftNum(checkIn)}N${_getANShiftNum(checkIn)})-1';
+//      }
+//      else
+//      {
+//        strShift='A${_getANShiftNum(checkIn)}N${_getANShiftNum(checkIn)}';
+//      }
+//    }
+//    // LN shift
+//    else
+//    {
+//      if(wHrs==22)
+//      strShift='(L${_getLShiftNum(checkIn)}N${_getLShiftNum(checkIn)})-2';
+//      else if(wHrs==23)
+//        strShift='(L${_getLShiftNum(checkIn)}N${_getLShiftNum(checkIn)})-1';
+//      else
+//        strShift='L${_getLShiftNum(checkIn)}N${_getLShiftNum(checkIn)}';
+//    }
+//    return strShift;
+//  }
+//  int _getM6ShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//    if((checkInDate.hour==10&&checkInDate.minute>15)||(checkInDate.hour==11&&checkInDate.minute>15))
+//      hr++;
+//    if(hr==7)
+//    {
+//      return 5;
+//    }
+//    else if(hr==8||hr==10) {
+//      return 1;
+//    }
+//    else
+//    {
+//      return 3;
+//    }
+//  }
+//  int _getM7ShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//    if(checkInDate.hour==10&&checkInDate.minute>15)
+//      hr++;
+//    if(hr==7)
+//    {
+//      return 6;
+//    }
+//    else if(hr==8||hr==10) {
+//      return 2;
+//    }
+//    else
+//    {
+//      return 4;
+//    }
+//  }
+//  int _getA7ShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//    if(hr==14)
+//    {
+//      return 2;
+//    }
+//    else
+//    {
+//      return 4;
+//    }
+//  }
+//  int _getA6ShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//
+//    if(hr==14)
+//    {
+//      return 1;
+//    }
+//   else if(hr==12)
+//     return 6;
+//    else
+//    {
+//      return 3;
+//    }
+//  }
+//  int _getXShiftNum(DateTime checkInDate)
+//  {
+//   int hr=checkInDate.hour;
+//   if(checkInDate.minute==0)
+//     hr--;
+//   if(checkInDate.hour==10&&checkInDate.minute>15)
+//     hr++;
+//   if(hr==7)
+//   {
+//     return 3;
+//   }
+//   else if(hr==8||hr==10) {
+//     return 1;
+//   }
+//     else
+//     {
+//       return 2;
+//     }
+//
+//
+// }
+//  int _getLShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//    if(checkInDate.hour==10&&checkInDate.minute>15)
+//      hr++;
+//    if(hr==7)
+//    {
+//      return 4;
+//    }
+//    else if(hr==8||hr==10) {
+//      return 1;
+//    }
+//    else
+//    {
+//      return 2;
+//    }
+//  }
+//  int _getNShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//    if(hr==20)
+//    {
+//      return 1;
+//    }
+//
+//    else
+//    {
+//      return 2;
+//    }
+//}
+//  int _getANShiftNum(DateTime checkInDate)
+//  {
+//    int hr=checkInDate.hour;
+//    if(checkInDate.minute==0)
+//      hr--;
+//    if(hr==14)
+//    {
+//      return 1;
+//    }
+//    else
+//    {
+//      return 2;
+//    }
+//  }
