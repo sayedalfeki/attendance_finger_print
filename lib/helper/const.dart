@@ -10,7 +10,9 @@ const String checkInColumn='attendance_check_in';
 const String checkOutColumn='attendance_check_out';
 const String workPlaceIdColumn='work_place_id';
 const String workPlaceNameColumn='work_place_name';
-const String workingHours='working_hours';
+const String appLanguageKey='app_language';
+
+//const String workingHours='working_hours';
 const String shift='shift';
 List<int> months=[1,2,3,4,5,6,7,8,9,10,11,12];
 List shiftSymbols=['M1','M3','M5','M6','A1','A3','A6','M2','M4','A2','A4','X1','X2','X3','L1','L2','L4','N1','N2','L1N1','L2N2',

@@ -5,3 +5,4 @@ class ShowWorkPlaces extends WorkPlaceState{}
 class GetAllPlaces extends WorkPlaceState{}
 class ChangeWorkPlaceIndex extends WorkPlaceState{}
 class ChangeWorkPlace extends WorkPlaceState{}
+class ChangeLanguage extends WorkPlaceState{}

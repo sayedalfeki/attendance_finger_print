@@ -17,7 +17,7 @@ class CheckPage extends StatelessWidget {
   Widget build(BuildContext context) {
     AppHelper appHelper=AppHelper(context);
     return BlocProvider(
-      create: (mainContext)=>WorkPlaceBloc()..getWorkPlaces(),
+      create: (mainContext)=>WorkPlaceBloc()..getLanguage()..getWorkPlaces(),
         //..initDateAndTime(),
       child: BlocConsumer<WorkPlaceBloc,WorkPlaceState>(
         listener: (mainContext,mainState){},
@@ -33,26 +33,27 @@ class CheckPage extends StatelessWidget {
               builder:(context,state) {
                 AttendanceBloc model=AttendanceBloc.instance(context);
                 return Scaffold(
-                appBar: AppBar(title: AppText('home page',fontWeight: FontWeight.normal,),
+                appBar: AppBar(title: AppText(workPlaceBloc.homePage,fontWeight: FontWeight.normal,),
                   actions: [
                     IconButton(onPressed: ()async{
                       if(places.isEmpty)
                       {
-                        AppHelper(context).showSnackBar('add your work place first');
+                        AppHelper(context).showSnackBar('${workPlaceBloc.addWorkPlace} ${workPlaceBloc.first}');
                         return;
                       }
          int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
                       String place=places[workPlaceBloc.placeIndex];
                       showDialog(context: context, builder:(context){
                       return AlertDialog(
-                        content: WorkTableWidget(workPlaceId: workPlaceId,workPlace: place,),);
+                        content: WorkTableWidget(workPlaceId: workPlaceId,workPlace: place,
+                        workPlaceBloc: workPlaceBloc,),);
                     });
                     }, icon:Icon(Icons.add_card,color: Colors.purple,))
                     ,
                   IconButton(onPressed: ()async{
                     if(places.isEmpty)
                     {
-                      appHelper.showSnackBar('add your work place first');
+                      AppHelper(context).showSnackBar('${workPlaceBloc.addWorkPlace} ${workPlaceBloc.first}');
                       return;
                     }
                     int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
@@ -63,7 +64,8 @@ class CheckPage extends StatelessWidget {
                     ));
                   }, icon:Icon(Icons.history,color: Colors.purple,))
                 ],),
-                body:CheckWidget(appHelper: appHelper,model: model,workPlaceBloc: workPlaceBloc,)
+                body:CheckWidget(appHelper: appHelper,model: model,workPlaceBloc: workPlaceBloc,),
+                  drawer: AppDrawerWidget(workPlaceBloc: workPlaceBloc),
                       );
               },
             ),
@@ -100,7 +102,7 @@ class CheckWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AppSpacer(width: 10),
-                 places.isEmpty?AppText('add work place'): DropdownButton<String>(
+                 places.isEmpty?AppText(workPlaceBloc.addWorkPlace): DropdownButton<String>(
                       value:places[workPlaceBloc.placeIndex],
                       items: places.map((e) {
                     return DropdownMenuItem(
@@ -131,7 +133,7 @@ class CheckWidget extends StatelessWidget {
                     model.changeDate(choosedDate);
                   }
                 },
-                controller: dateController, label: 'date', hint: 'enter date'),
+                controller: dateController, label:workPlaceBloc.dateConst, hint: ''),
             AppSpacer(),
             AppTextField(
                 onTap: () async {
@@ -142,7 +144,7 @@ class CheckWidget extends StatelessWidget {
                     //appHelper.showSnackBar(time.hour.toString());
                   }
                 },
-                controller: timeController, label: 'time', hint: 'enter time'),
+                controller: timeController, label:workPlaceBloc.timeConst, hint: ''),
             AppSpacer(),
             GestureDetector(
               onTap: ()
@@ -154,7 +156,7 @@ class CheckWidget extends StatelessWidget {
                 registerAttendance(model,workPlaceBloc);
               },
               child: AppContainer(
-                  child: AppText('register', color: Colors.white,),
+                  child: AppText(workPlaceBloc.registerButton, color: Colors.white,),
                   color: Colors.teal
               ),
             ),
@@ -177,7 +179,7 @@ class CheckWidget extends StatelessWidget {
     // );
     if(workPlaceBloc.places.isEmpty)
     {
-      appHelper.showSnackBar('add your work place first');
+      appHelper.showSnackBar('${workPlaceBloc.addWorkPlace} ${workPlaceBloc.first}');
       return;
     }
     int workPlaceId=await workPlaceBloc.getWorkPlaceId(workPlaceBloc.places[workPlaceBloc.placeIndex]);
@@ -193,7 +195,7 @@ class CheckWidget extends StatelessWidget {
         DateTime chDate=dateHelper.getDateTime(attendanceModel.checkInTime!);
         if(model.dateTime.hour<=chDate.hour)
         {
-          appHelper.showSnackBar('invalid time ');
+          appHelper.showSnackBar(workPlaceBloc.invalidTime);
           return;
         }
         modelBloc.updateCheckOut(attendanceId, strCheckDate);
@@ -245,13 +247,15 @@ class CheckWidget extends StatelessWidget {
         modelBloc.addAttendanceTable(afpModel);
       }
     }
-    appHelper.showSnackBar('registered');
+    appHelper.showSnackBar(workPlaceBloc.register);
   }
 }
 class WorkTableWidget extends StatelessWidget {
-   WorkTableWidget({Key? key,required this.workPlaceId,required this.workPlace}) : super(key: key);
+   WorkTableWidget({Key? key,required this.workPlaceId,required this.workPlace,
+   required this.workPlaceBloc}) : super(key: key);
    final int workPlaceId;
    final String workPlace;
+   final WorkPlaceBloc workPlaceBloc;
    @override
   Widget build(BuildContext context) {
     AppHelper appHelper=AppHelper(context);
@@ -271,7 +275,7 @@ class WorkTableWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AppText('add your work table',color: Colors.teal,),
+              AppText(workPlaceBloc.addTable,color: Colors.teal,),
               AppSpacer(height: 30),
               Expanded(
                   flex: 2,
@@ -288,7 +292,7 @@ class WorkTableWidget extends StatelessWidget {
                 
                       }
                     },
-                    controller:dateController, label:'date', hint:''),
+                    controller:dateController, label:workPlaceBloc.dateConst, hint:''),
               ),
               AppSpacer(width: 10),
               Expanded(
@@ -327,7 +331,7 @@ class WorkTableWidget extends StatelessWidget {
                 },
                   child: AppContainer(
                       color: Colors.teal,
-                      child: AppText('add',color: Colors.white,)))
+                      child: AppText(workPlaceBloc.addButton,color: Colors.white,)))
             ],
           ),
         );
@@ -347,9 +351,9 @@ class WorkPlaceWidget extends StatelessWidget {
       child: Column(
               //mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppText('add your work place'),
+            AppText(workPlaceBloc.addWorkPlace),
             AppSpacer(height: 100),
-            AppTextField(controller:workPlaceController, label:'work place', hint:'add your work place'),
+            AppTextField(controller:workPlaceController, label:workPlaceBloc.workPlace, hint:workPlaceBloc.addWorkPlace),
             AppSpacer(height: 20),
             GestureDetector(
               onTap: (){
@@ -359,13 +363,48 @@ class WorkPlaceWidget extends StatelessWidget {
                 Navigator.pop(context);
               },
               child: AppContainer(
-                  child: AppText('add')),
+                  child: AppText(workPlaceBloc.addButton)),
             )
           ],
         ),
     );
-
-
+  }
+}
+class AppDrawerWidget extends StatelessWidget {
+  const AppDrawerWidget({Key? key,required this.workPlaceBloc}) : super(key: key);
+  final WorkPlaceBloc workPlaceBloc;
+  @override
+  Widget build(BuildContext context) {
+    return AppContainer(
+      width: 200,
+      height: double.infinity,
+      child: Column(
+        children: [
+          AppSpacer(
+            height: 100,
+          ),
+          GestureDetector(
+              onTap: (){
+                workPlaceBloc.changeLanguage();
+              },
+              child: Row(
+                mainAxisAlignment: workPlaceBloc.language == 'arabic'
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+                children: [
+                  AppText(workPlaceBloc.language == 'arabic'
+                      ? workPlaceBloc.appLanguage
+                      : workPlaceBloc.changeLang),
+                  AppSpacer(width: 10),
+                  AppText(workPlaceBloc.language == 'arabic'
+                      ? workPlaceBloc.changeLang
+                      : workPlaceBloc.appLanguage),
+                ],
+              )
+          )
+        ],
+      ),
+    );
   }
 }
 

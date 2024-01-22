@@ -10,13 +10,14 @@ import '../../helper/const.dart';
 import '../../model/attendance_model.dart';
 import '../../widget/helper_widget.dart';
 class CheckHistoryPage extends StatelessWidget {
-   CheckHistoryPage({Key? key,required this.workPlace,required this.workPlaceId}) : super(key: key);
+   CheckHistoryPage({Key? key,required this.workPlace,
+     required this.workPlaceId}) : super(key: key);
   String workPlace;
   int workPlaceId;
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create:(mainContext)=>WorkPlaceBloc()..getWorkPlaces()..changePlace(workPlace),
+      create:(mainContext)=>WorkPlaceBloc()..getLanguage()..getWorkPlaces()..changePlace(workPlace),
       child: BlocConsumer<WorkPlaceBloc,WorkPlaceState>(
         listener: (mainContext,mainState){},
         builder:(mainContext,mainState){
@@ -34,7 +35,7 @@ class CheckHistoryPage extends StatelessWidget {
               // modelBloc.initMonthAndYear();
               //modelBloc.getAllAFP();
               return Scaffold(
-                appBar: AppBar(title: const AppText('history page',fontWeight: FontWeight.normal,),
+                appBar: AppBar(title: AppText(workPlaceBloc.historyPage,fontWeight: FontWeight.normal,),
                 actions: [
                   IconButton(onPressed:(){
                     showDialog(context: context, builder:(context){
@@ -64,13 +65,95 @@ class CheckHistoryWidget extends StatelessWidget{
     List<String> places=workPlaceBloc.places;
     AppHelper appHelper=AppHelper(context);
     //TextEditingController  monthController=TextEditingController(text: '${modelBloc.month}');
+    List<Widget> fromWidgetList=[
+      AppText(workPlaceBloc.language=='arabic'?workPlaceBloc.to:workPlaceBloc.from,fontSize: 15,),
+      AppSpacer(width:5,),
+      Card(
+        elevation: 10,
+        child: AppButton(
+          onTap: ()async{
+
+            DateTime? fromDate=await appHelper.showDate();
+            if(fromDate!=null)
+            {
+              if(workPlaceBloc.language=='arabic')
+              {
+                if(fromDate.isBefore(modelBloc.fromDate))
+                {
+                  appHelper.showSnackBar(workPlaceBloc.invalidDate);
+                  return;
+                }
+                modelBloc.changeToDate(fromDate);
+              }
+              else
+              {
+                if(fromDate.isAfter(modelBloc.toDate))
+                {
+                  appHelper.showSnackBar('invalid selected date');
+                  return;
+                }
+                modelBloc.changeFromDate(fromDate);
+              }
+              int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
+              modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+            }
+          },
+          data:workPlaceBloc.language=='arabic'?modelBloc.strToDate
+              :modelBloc.strFromDate,backGroundColor: Colors.white,textColor: Colors.black54,
+        ),
+      ),
+    ];
+    List<Widget> toWidgetList=[
+      AppText(workPlaceBloc.language=='arabic'?workPlaceBloc.from:workPlaceBloc.to,fontSize: 15,),
+      AppSpacer(width:5,),
+      Card(
+          elevation: 10,
+          child: AppButton(
+            onTap: ()async{
+              DateTime? toDate=await appHelper.showDate();
+              if(toDate!=null)
+              {
+                if(workPlaceBloc.language=='arabic')
+                {
+                  if(toDate.isAfter(modelBloc.toDate))
+                  {
+                    appHelper.showSnackBar(workPlaceBloc.invalidDate);
+                    return;
+                  }
+                  modelBloc.changeFromDate(toDate);
+                }
+                else
+                {
+                  if(toDate.isBefore(modelBloc.fromDate))
+                  {
+                    appHelper.showSnackBar(workPlaceBloc.invalidDate);
+                    return;
+                  }
+                  modelBloc.changeToDate(toDate);
+                }
+                int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
+                modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+              }
+            },
+            data:workPlaceBloc.language=='arabic'?modelBloc.strFromDate
+                :modelBloc.strToDate,backGroundColor: Colors.white,textColor: Colors.black54,)),
+    ];
+    List<Widget> fixedWidgetList=[
+      Checkbox(value: false, onChanged:(value){}),
+      MakeHistoryRectangle(data:workPlaceBloc.dateConst,textColor: Colors.white,fontSize: 12,),
+      MakeHistoryRectangle(data:workPlaceBloc.checkIn,textColor: Colors.white,fontSize: 12),
+      MakeHistoryRectangle(data:workPlaceBloc.checkOut,textColor: Colors.white,fontSize: 11),
+      MakeHistoryRectangle(data:workPlaceBloc.workHour,textColor: Colors.white,fontSize:10,),
+      MakeHistoryRectangle(data:workPlaceBloc.shiftSymbol,textColor: Colors.white,fontSize: 12),
+      MakeHistoryRectangle(data:workPlaceBloc.attendanceSymbol,textColor: Colors.white,fontSize: 12),
+    ];
     return Container(
       padding: const EdgeInsets.all(10),
       height: double.infinity,
       child: Form(
         child: Column(
           children: [
-            const AppText('Attendance History ',color: Colors.teal,),
+            //const AppText('Attendance History ',color: Colors.teal,),
             AppSpacer(),
             places.isEmpty?AppSpacer():Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -95,68 +178,24 @@ class CheckHistoryWidget extends StatelessWidget{
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppText('from',fontSize: 15,),
-                  AppSpacer(width:5,),
-                  Expanded(
-                    child: Card(
-                      elevation: 10,
-                      child: AppButton(
-                        onTap: ()async{
-                          DateTime? fromDate=await appHelper.showDate();
-                          if(fromDate!=null)
-                          {
-                            if(fromDate.isAfter(modelBloc.toDate))
-                            {
-                              appHelper.showSnackBar('invalid selected date');
-                              return;
-                            }
-                            modelBloc.changeFromDate(fromDate);
-                            int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
-                            modelBloc.getAllAttendanceBetweenDates(workPlaceId);
-                          }
-                        },
-                        data:modelBloc.strFromDate,backGroundColor: Colors.white,textColor: Colors.black54,
-                      ),
-                    ),
-                  ),
-                  AppSpacer(width: 10),
-                  AppText('to',fontSize: 15,),
-                  AppSpacer(width:5,),
-                  Expanded(child: Card(
-                      elevation: 10,
-                      child: AppButton(
-                        onTap: ()async{
-                          DateTime? toDate=await appHelper.showDate();
-                          if(toDate!=null)
-                          {
-                            if(toDate.isBefore(modelBloc.fromDate))
-                            {
-                              appHelper.showSnackBar('invalid selected date');
-                              return;
-                            }
-                            modelBloc.changeToDate(toDate);
-                            int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
-                            modelBloc.getAllAttendanceBetweenDates(workPlaceId);
-                          }
-                        },
-                        data:modelBloc.strToDate,backGroundColor: Colors.white,textColor: Colors.black54,))),
+                 Row(
+                   children:workPlaceBloc.language=='arabic'?
+                   fromWidgetList.reversed.toList():fromWidgetList,
 
+                 ),
+                  AppSpacer(width: 10),
+                  Row(
+                    children:workPlaceBloc.language=='arabic'?
+                    toWidgetList.reversed.toList():toWidgetList,
+
+                  )
                 ],
               ),
             ),
             AppSpacer(height: 20,),
             Row(
-             children: [
-               Checkbox(value: false, onChanged:(value){}),
-              MakeHistoryRectangle(data: 'date',textColor: Colors.white,fontSize: 12,),
-              MakeHistoryRectangle(data:'check in',textColor: Colors.white,fontSize: 12),
-              MakeHistoryRectangle(data:'check out',textColor: Colors.white,fontSize: 11),
-               MakeHistoryRectangle(data: 'work hours',textColor: Colors.white,fontSize:10,),
-               MakeHistoryRectangle(data:'table shift',textColor: Colors.white,fontSize: 12),
-               MakeHistoryRectangle(data:'work shift',textColor: Colors.white,fontSize: 12),
-
-             ],
-           ),
+             children:workPlaceBloc.language=='arabic'?
+            fixedWidgetList.reversed.toList():fixedWidgetList),
             AppSpacer(),
             // dynamic data
              Expanded(child: HistoryWidget(modelBloc: modelBloc,workPlaceBloc: workPlaceBloc,))
@@ -175,7 +214,7 @@ class HistoryWidget extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     List<AttendanceModel> afpList=modelBloc.afpList;
-    return afpList.isEmpty?AppText('no data registered'):ListView.builder(
+    return afpList.isEmpty?AppText(workPlaceBloc.noDataRegistered):ListView.builder(
       itemBuilder: (context,index){
         String day='',checkIn='',checkOut='',tableShift='',workShift='',newWorkShift='',
         firstShift='',secondShift='';
@@ -204,7 +243,31 @@ class HistoryWidget extends StatelessWidget
             shifts.add(firstShift);
             shifts.add(secondShift);
           }
+
         }
+        List<Widget> dynamicListData= [
+          Checkbox(value:modelBloc.checkedList[index], onChanged:(value){
+            modelBloc.changeChecked(index,value!);
+          }),
+          //date
+          MakeHistoryRectangle(data:day,
+            fontWeight: FontWeight.bold,backColor: Colors.white,),
+          // check in
+          MakeHistoryRectangle(data: checkIn,
+            fontWeight: FontWeight.bold,backColor: Colors.white,
+            textColor: minuteLated>30?Colors.red:Colors.black,
+          ),
+          // check out
+          MakeHistoryRectangle(data: checkOut,
+            fontWeight: FontWeight.bold,backColor: Colors.white,),
+          // working hours
+          MakeHistoryRectangle(data: '$wHrs',backColor: Colors.white),
+          // table shift
+          MakeHistoryRectangle(data: tableShift,backColor: Colors.white,fontSize: 14,),
+          // attendance shift
+          MakeHistoryRectangle(data: shifts.isEmpty?newWorkShift:shifts[modelBloc.shiftIndex],backColor: Colors.white,
+            textColor:tableShift!=workShift? Colors.red:Colors.black,),
+        ];
         return  Column(
           children: [
             GestureDetector(
@@ -236,29 +299,32 @@ class HistoryWidget extends StatelessWidget
                 modelBloc.getAllAttendanceBetweenDates(workPlaceId);
               },
               child: Row(
-                children: [
-                  Checkbox(value:modelBloc.checkedList[index], onChanged:(value){
-                    modelBloc.changeChecked(index,value!);
-                  }),
-                  //date
-                 MakeHistoryRectangle(data:day,
-                   fontWeight: FontWeight.bold,backColor: Colors.white,),
-                  // check in
-                  MakeHistoryRectangle(data: checkIn,
-                      fontWeight: FontWeight.bold,backColor: Colors.white,
-                  textColor: minuteLated>30?Colors.red:Colors.black,
-                  ),
-                  // check out
-                  MakeHistoryRectangle(data: checkOut,
-                      fontWeight: FontWeight.bold,backColor: Colors.white,),
-                  // working hours
-                  MakeHistoryRectangle(data: '$wHrs',backColor: Colors.white),
-                  // table shift
-                  MakeHistoryRectangle(data: tableShift,backColor: Colors.white,fontSize: 14,),
-                  // attendance shift
-                  MakeHistoryRectangle(data: shifts.isEmpty?newWorkShift:shifts[modelBloc.shiftIndex],backColor: Colors.white,
-                    textColor:tableShift!=workShift? Colors.red:Colors.black,),
-                ],
+                children:
+                 workPlaceBloc.language=='arabic'?dynamicListData.reversed.toList():
+                     dynamicListData
+                // [
+                //   Checkbox(value:modelBloc.checkedList[index], onChanged:(value){
+                //     modelBloc.changeChecked(index,value!);
+                //   }),
+                //   //date
+                //  MakeHistoryRectangle(data:day,
+                //    fontWeight: FontWeight.bold,backColor: Colors.white,),
+                //   // check in
+                //   MakeHistoryRectangle(data: checkIn,
+                //       fontWeight: FontWeight.bold,backColor: Colors.white,
+                //   textColor: minuteLated>30?Colors.red:Colors.black,
+                //   ),
+                //   // check out
+                //   MakeHistoryRectangle(data: checkOut,
+                //       fontWeight: FontWeight.bold,backColor: Colors.white,),
+                //   // working hours
+                //   MakeHistoryRectangle(data: '$wHrs',backColor: Colors.white),
+                //   // table shift
+                //   MakeHistoryRectangle(data: tableShift,backColor: Colors.white,fontSize: 14,),
+                //   // attendance shift
+                //   MakeHistoryRectangle(data: shifts.isEmpty?newWorkShift:shifts[modelBloc.shiftIndex],backColor: Colors.white,
+                //     textColor:tableShift!=workShift? Colors.red:Colors.black,),
+                // ],
               ),
             ),
             AppSpacer(height: 5)
@@ -315,18 +381,102 @@ final WorkPlaceBloc workPlaceBloc;
     int monthlyLateHours=modelBloc.getMonthlyLateHours(editAttendanceList);
     int holidays=modelBloc.numberOfHolidays(monthHour, attendanceHour);
     int hoursDiff=monthHour>attendanceHour?monthHour-attendanceHour:0;
+    List<Widget> minuteHourList= [
+      AppText('${(monthlyLateHours~/60)}   '
+        ,fontSize: 14,color: monthlyLateHours>359?Colors.red:Colors.black,),
+      AppSpacer(width:2,),
+      AppText(workPlaceBloc.hourConst,fontSize: 15,color: monthlyLateHours>359?Colors.red:Colors.black,),
+      AppSpacer(width:2,),
+      AppText(workPlaceBloc.andConst,fontSize: 15,color: monthlyLateHours>359?Colors.red:Colors.black,),
+      AppSpacer(width:2,),
+      AppText('${monthlyLateHours%60}',fontSize: 15,color: monthlyLateHours>359?Colors.red:Colors.black,),
+      AppSpacer(width:2,),
+      AppText(workPlaceBloc.minuteConst,fontSize: 15,color: monthlyLateHours>359?Colors.red:Colors.black,),
+    ];
+    List<Widget> totalMinuteList= [
+      AppText('($monthlyLateHours )',fontSize: 15,color: monthlyLateHours>359?Colors.red:Colors.black,),
+      AppSpacer(width: 5,),
+      AppText(workPlaceBloc.minuteConst,fontSize: 15,color: monthlyLateHours>359?Colors.red:Colors.black,)
+    ];
+    List<Widget> vacationDaysList=[
+      AppText('$holidays ',fontSize: 15,),
+      AppSpacer(width: 5,),
+      AppText(workPlaceBloc.dayConst,fontSize: 15,)
+  ];
+    List<Widget> vacationHoursList=
+    [
+      AppText(workPlaceBloc.about,fontSize: 15,),
+      AppSpacer(width: 5,),
+      AppText('($hoursDiff)',fontSize: 15,),
+      AppSpacer(width: 5,),
+      AppText(workPlaceBloc.hourConst,fontSize: 15,)
+    ];
+    List<Widget> lateHoursList= [
+      AppText('${workPlaceBloc.lateHour}',fontSize: 15,color: Colors.blue),
+      AppText(':'),
+      AppSpacer(width:5),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+           Row(
+             children:workPlaceBloc.language=='arabic'?minuteHourList.reversed.toList():
+                 minuteHourList,
+           ),
+         Row(
+           children: workPlaceBloc.language=='arabic'?totalMinuteList.reversed.toList():
+           totalMinuteList
+          ,
+         )
+        ],
+      ),
+    ];
+    List<Widget> monthHoursList= [
+      AppText('${workPlaceBloc.monthHour} ',fontSize: 15,color: Colors.blue),
+      workPlaceBloc.language=='arabic'?AppText(':'):Expanded(child: AppText(':')),
+      Expanded(child: AppSpacer()),
+      AppText('$monthHour ',fontSize: 15,),
+      AppSpacer(width: 5,),
+      AppText(workPlaceBloc.hourConst)
+    ];
+    List<Widget> attendanceHoursList=  [
+      AppText('${workPlaceBloc.attendanceHour} ',fontSize: 15,color: Colors.blue),
+      AppText(':'),
+      Expanded(child: AppSpacer()),
+      AppText('$attendanceHour',fontSize: 15,),
+      AppSpacer(width: 5,),
+      AppText(workPlaceBloc.hourConst),
+    ];
+    List<Widget> vacationList= [
+      AppText('${workPlaceBloc.vacation} ',fontSize: 15,color: Colors.blue),
+      Expanded(child: AppText(':')),
+      AppSpacer(width: 10),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        //mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: workPlaceBloc.language=='arabic'?vacationDaysList.reversed.toList():
+                vacationDaysList,
+          ),
+          Row(
+            children: workPlaceBloc.language=='arabic'?vacationHoursList.reversed.toList():
+            vacationHoursList,
+          )
+        ],
+      ),
+    ];
     return Container(
+      width: double.infinity,
       height: 400,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        //crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          AppText('attendance month statistics',fontSize: 15,color: Colors.blue,),
+          AppText(workPlaceBloc.monthStatistics,fontSize: 15,color: Colors.blue,),
           //AppSizedBox(height: 100),
           AppSpacer(height: 30),
           Expanded(
             flex:1,
             child: AppContainer(
-
                 width: 200,
                 child: AppText(workPlaceBloc.place,color: Colors.blue,fontSize: 20,)),
           ),
@@ -334,24 +484,11 @@ final WorkPlaceBloc workPlaceBloc;
           Expanded(
             flex: 1,
             child: Container(
+              //late hours
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: AppText('late hours:',fontSize: 15,color: Colors.blue)),
-                  AppSpacer(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText('${(monthlyLateHours~/60)} hrs and ${monthlyLateHours%60} '
-                          'min',fontSize: 14,),
-                      AppText('($monthlyLateHours minute)',fontSize: 15,)
-                    ],
-                  ),
-                  AppSpacer(width: 10),
-                  Visibility(
-                       visible: monthlyLateHours>359?true:false,
-                      child: Icon(Icons.error_outlined,color: Colors.red,))
-                ],
+                children:workPlaceBloc.language=='arabic'?lateHoursList.reversed.toList():
+               lateHoursList,
               ),
             ),
           ),
@@ -359,22 +496,19 @@ final WorkPlaceBloc workPlaceBloc;
           Expanded(
             flex: 1,
             child: Row(
-              children: [
-                Expanded(child: AppText('month hours :',fontSize: 15,color: Colors.blue)),
-                AppSpacer(width: 10),
-                AppText('$monthHour hrs',fontSize: 15,)
-              ],
+              mainAxisAlignment: workPlaceBloc.language=='arabic'?MainAxisAlignment.end:MainAxisAlignment.start,
+              children: workPlaceBloc.language=='arabic'?monthHoursList.reversed.toList():
+                  monthHoursList
+             ,
             ),
           ),
           AppSpacer(),
           Expanded(
             flex: 1,
             child: Row(
-              children: [
-                Expanded(child: AppText('attendance hours :',fontSize: 15,color: Colors.blue)),
-                AppSpacer(width: 10),
-                AppText('$attendanceHour hrs',fontSize: 15,)
-              ],
+              mainAxisAlignment: workPlaceBloc.language=='arabic'?MainAxisAlignment.end:MainAxisAlignment.start,
+              children: workPlaceBloc.language=='arabic'?attendanceHoursList.reversed.toList():
+           attendanceHoursList ,
             ),
           ),
           AppSpacer(),
@@ -382,25 +516,14 @@ final WorkPlaceBloc workPlaceBloc;
             flex: 1,
             child: Container(
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: AppText('vacation:',fontSize: 15,color: Colors.blue)),
-                  AppSpacer(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AppText('$holidays days ',fontSize: 15,),
-                      AppText('( for $hoursDiff hours )',fontSize: 15,)
-                    ],
-                  ),
-
-                ],
+                crossAxisAlignment:CrossAxisAlignment.start,
+                children:workPlaceBloc.language=='arabic'?vacationList.reversed.toList():
+                vacationList
+               ,
               ),
             ),
           ),
           AppSpacer(),
-
         ],
       ),
     );
@@ -440,7 +563,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
             height: 500,
             child: Column(
               children: [
-                AppText('update your attendance',color: Colors.teal,),
+                AppText(workPlaceBloc.updateAttendance,color: Colors.teal,),
                 AppSpacer(height: 20),
                 //date
                 AppTextField(
@@ -451,7 +574,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                         modelBloc.changeDate(chooseDate);
                       }
                     },
-                    controller:dateController, label:'date', hint:''),
+                    controller:dateController, label:workPlaceBloc.dateConst, hint:''),
                 AppSpacer(),
                 //check in
                 Visibility(
@@ -465,7 +588,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                          modelBloc.changeCheckInDate(checkInDate,timeSelected: true);
                        }
                       },
-                      controller:checkInController, label:'check in', hint:''),
+                      controller:checkInController, label:workPlaceBloc.checkIn, hint:''),
                 ),
                 AppSpacer(),
                 //check out
@@ -482,7 +605,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                           modelBloc.changeCheckOutDate(checkOutDate,timeSelected: true);
                         }
                       },
-                      controller:checkOutController, label:'check out', hint:''),
+                      controller:checkOutController, label:workPlaceBloc.checkOut, hint:''),
                 ),
                 AppSpacer(width: 10),
                 // checkout date
@@ -496,14 +619,15 @@ class UpdateAttendanceWidget extends StatelessWidget {
                          modelBloc.changeCheckOutDate(newCheckOutDate);
                         }
                       },
-                      controller:checkOutDateController, label:'check out date', hint:''),
+                      controller:checkOutDateController, label:workPlaceBloc.language=='arabic'?'${workPlaceBloc.dateConst.substring(2)} ${workPlaceBloc.checkOut}':
+                  '${workPlaceBloc.checkOut} ${workPlaceBloc.dateConst}' , hint:''),
                 ),
                 AppSpacer(),
                 // shift symbols
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    AppText('shift',color: Colors.teal,),
+                    AppText(workPlaceBloc.shiftSymbol,color: Colors.teal,),
                     AppSpacer(width: 20),
                     DropdownButton<String>(
                         value:symbols[modelBloc.symbolIndex],
@@ -545,7 +669,7 @@ class UpdateAttendanceWidget extends StatelessWidget {
                      modelBloc.updateAttendanceTable(attendanceModel.attendanceId, updatedAttendanceModel);
                      Navigator.pop(context);
                     },
-                    child: AppContainer(child: AppText('update',color: Colors.white,)
+                    child: AppContainer(child: AppText(workPlaceBloc.update,color: Colors.white,)
                     ,color: Colors.teal))
               ],
             ),
@@ -556,6 +680,79 @@ class UpdateAttendanceWidget extends StatelessWidget {
     );
   }
 }
+// children: [
+//   AppText(workPlaceBloc.language=='arabic'?workPlaceBloc.from:workPlaceBloc.to,fontSize: 15,),
+//   AppSpacer(width:5,),
+//   Card(
+//       elevation: 10,
+//       child: AppButton(
+//         onTap: ()async{
+//           DateTime? toDate=await appHelper.showDate();
+//           if(toDate!=null)
+//           {
+//             if(workPlaceBloc.language=='arabic')
+//             {
+//               if(toDate.isAfter(modelBloc.toDate))
+//               {
+//                 appHelper.showSnackBar(workPlaceBloc.invalidDate);
+//                 return;
+//               }
+//               modelBloc.changeFromDate(toDate);
+//             }
+//             else
+//             {
+//               if(toDate.isBefore(modelBloc.fromDate))
+//               {
+//                 appHelper.showSnackBar(workPlaceBloc.invalidDate);
+//                 return;
+//               }
+//               modelBloc.changeToDate(toDate);
+//             }
+//             int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
+//             modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+//           }
+//         },
+//         data:workPlaceBloc.language=='arabic'?modelBloc.strFromDate
+//             :modelBloc.strToDate,backGroundColor: Colors.white,textColor: Colors.black54,)),
+// ],
+// children: [
+//   AppText(workPlaceBloc.language=='arabic'?workPlaceBloc.to:workPlaceBloc.from,fontSize: 15,),
+//   AppSpacer(width:5,),
+//   Card(
+//     elevation: 10,
+//     child: AppButton(
+//       onTap: ()async{
+//
+//         DateTime? fromDate=await appHelper.showDate();
+//         if(fromDate!=null)
+//         {
+//           if(workPlaceBloc.language=='arabic')
+//           {
+//             if(fromDate.isBefore(modelBloc.fromDate))
+//             {
+//               appHelper.showSnackBar(workPlaceBloc.invalidDate);
+//               return;
+//             }
+//             modelBloc.changeToDate(fromDate);
+//           }
+//           else
+//           {
+//             if(fromDate.isAfter(modelBloc.toDate))
+//             {
+//               appHelper.showSnackBar('invalid selected date');
+//               return;
+//             }
+//             modelBloc.changeFromDate(fromDate);
+//           }
+//           int workPlaceId=await workPlaceBloc.getWorkPlaceId(places[workPlaceBloc.placeIndex]);
+//           modelBloc.getAllAttendanceBetweenDates(workPlaceId);
+//         }
+//       },
+//       data:workPlaceBloc.language=='arabic'?modelBloc.strToDate
+//           :modelBloc.strFromDate,backGroundColor: Colors.white,textColor: Colors.black54,
+//     ),
+//   ),
+// ],
 // class YearsWidget extends StatelessWidget {
 //   YearsWidget({Key? key,required this.modelBloc,required this.workPlaceBloc}) : super(key: key);
 //   final AttendanceBloc modelBloc;
